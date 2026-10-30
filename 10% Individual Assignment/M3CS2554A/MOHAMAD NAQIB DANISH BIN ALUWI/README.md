@@ -69,6 +69,8 @@ The server processes commands such as hello, time, help, and exit. Other message
 # 6.0 Program Implementation
 
 The following code implements the server component of the project.
+
+```python
 import socket
 import threading
 from datetime import datetime
@@ -76,7 +78,7 @@ from datetime import datetime
 HOST = "127.0.0.1"
 PORT = 12345
 
-```python
+
 def handle_client(connection, address):
     print(f"\n[{address}] Client connected.")
 
@@ -186,6 +188,83 @@ if __name__ == "__main__":
     start_server()
  ```
 
+this is the code for `client.py` 
+
+ ```
+import socket
+
+HOST = "127.0.0.1"
+PORT = 12345
+
+
+def start_client():
+    client = socket.socket(
+        socket.AF_INET,
+        socket.SOCK_STREAM
+    )
+
+    try:
+        client.connect((HOST, PORT))
+
+        print("=" * 45)
+        print("PYTHON NETWORK PROGRAMMING CLIENT")
+        print("=" * 45)
+        print(f"Connected to {HOST}:{PORT}")
+        print("Type 'help' to view commands.")
+        print("Type 'exit' to disconnect.")
+
+        with client:
+            reader = client.makefile(
+                "r", encoding="utf-8"
+            )
+
+            while True:
+                message = input("\nYou: ").strip()
+
+                if not message:
+                    print("Please enter a message.")
+                    continue
+
+                client.sendall(
+                    (message + "\n").encode("utf-8")
+                )
+
+                response = reader.readline()
+
+                if not response:
+                    print("Server closed the connection.")
+                    break
+
+                response = response.rstrip("\r\n")
+                print("Server:", response)
+
+                if message.lower() == "exit":
+                    break
+
+    except ConnectionRefusedError:
+        print(
+            "Connection failed. Make sure the server "
+            "is running first."
+        )
+
+    except (ConnectionError, OSError) as error:
+        print(f"Network error: {error}")
+
+    except KeyboardInterrupt:
+        print("\nClient interrupted.")
+
+    finally:
+        try:
+            client.close()
+        except OSError:
+            pass
+
+        print("Client program ended.")
+
+
+if __name__ == "__main__":
+    start_client()
+```
 # 7.0 Network Communication Logic
 
 The server uses TCP to establish a connection-oriented communication channel. Before exchanging messages, the client must successfully connect to the server's IP address and port.
